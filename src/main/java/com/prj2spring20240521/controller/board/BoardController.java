@@ -16,8 +16,7 @@ public class BoardController {
     private final BoardService service;
 
     @PostMapping("add")
-    public ResponseEntity add(@RequestBody Board board) throws Exception {
-        Thread.sleep(1000);
+    public ResponseEntity add(@RequestBody Board board) {
         if (service.validate(board)) {
             service.add(board);
             return ResponseEntity.ok().build();
@@ -31,8 +30,11 @@ public class BoardController {
         return service.list();
     }
 
-    @GetMapping({"id"})
+    // /api/board/5
+    // /api/board/6
+    @GetMapping("{id}")
     public Board get(@PathVariable Integer id) {
         return service.get(id);
     }
 }
+
