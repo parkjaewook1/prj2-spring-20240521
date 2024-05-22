@@ -7,6 +7,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @Transactional(rollbackFor = Exception.class)
 @RequiredArgsConstructor
@@ -19,15 +21,16 @@ public class MemberService {
         member.setPassword(passwordEncoder.encode(member.getPassword()));
         member.setEmail(member.getEmail().trim());
         member.setNickName(member.getNickName().trim());
+
         mapper.insert(member);
     }
 
     public Member getByEmail(String email) {
-        return mapper.selectByEmail(email);
+        return mapper.selectByEmail(email.trim());
     }
 
     public Member getByNickName(String nickName) {
-        return mapper.selectByNickName(nickName);
+        return mapper.selectByNickName(nickName.trim());
     }
 
     public boolean validate(Member member) {
@@ -50,5 +53,27 @@ public class MemberService {
         }
 
         return true;
+    }
+
+    public List<Member> list() {
+        return mapper.selectAll();
+    }
+
+    public Member getById(Integer id) {
+        return mapper.selectById(id);
+    }
+
+    public void remove(Integer id) {
+        mapper.deleteById(id);
+    }
+
+    public boolean hasAccess(Member member) {
+        Member dbMember = mapper.selectById(member.getId());
+
+        if (dbMember == null) {
+            return false;
+        }
+
+        return passwordEncoder.matches(member.getPassword(), dbMember.getPassword());
     }
 }

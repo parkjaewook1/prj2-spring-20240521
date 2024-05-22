@@ -1,13 +1,15 @@
 package com.prj2spring20240521.mapper.member;
 
 import com.prj2spring20240521.domain.member.Member;
+import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 
+import java.util.List;
+
 @Mapper
 public interface MemberMapper {
-
 
     @Insert("""
             INSERT INTO member (email, password, nick_name)
@@ -22,11 +24,37 @@ public interface MemberMapper {
             """)
     Member selectByEmail(String email);
 
-
     @Select("""
             SELECT *
             FROM member
             WHERE nick_name = #{nickName}
             """)
     Member selectByNickName(String nickName);
+
+    @Select("""
+            SELECT id,
+                   email,
+                   nick_name,
+                   inserted
+            FROM member
+            ORDER BY id ASC 
+            """)
+    List<Member> selectAll();
+
+    @Select("""
+            SELECT id,
+                   email,
+                   password,
+                   nick_name,
+                   inserted
+            FROM member
+            WHERE id = #{id}
+            """)
+    Member selectById(Integer id);
+
+    @Delete("""
+            DELETE FROM member
+            WHERE id = #{id}
+            """)
+    int deleteById(Integer id);
 }
