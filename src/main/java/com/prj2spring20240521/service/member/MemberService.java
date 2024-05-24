@@ -76,6 +76,8 @@ public class MemberService {
     public void remove(Integer id) {
         // board 테이블에서 작성한 글 지우기
         boardMapper.deleteByMemberId(id);
+
+        // member 테이블에서 지우기
         mapper.deleteById(id);
     }
 
@@ -147,5 +149,9 @@ public class MemberService {
         }
 
         return result;
+    }
+
+    public boolean hasAccess(Integer id, Authentication authentication) {
+        return authentication.getName().equals(id.toString());
     }
 }
