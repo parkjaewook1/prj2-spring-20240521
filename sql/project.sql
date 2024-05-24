@@ -49,3 +49,6 @@ DESC board;
 SELECT *
 FROM board
 ORDER BY id DESC;
+
+SELECT *
+FROM member;
