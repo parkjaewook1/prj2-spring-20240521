@@ -9,7 +9,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/board")
@@ -32,9 +32,8 @@ public class BoardController {
     }
 
     @GetMapping("list")
-    public List<Board> list(@RequestParam(defaultValue = "1") Integer page) {
-        System.out.println("page = " + page);
-        return service.list();
+    public Map<String, Object> list(@RequestParam(defaultValue = "1") Integer page) {
+        return service.list(page);
     }
 
     // /api/board/5
