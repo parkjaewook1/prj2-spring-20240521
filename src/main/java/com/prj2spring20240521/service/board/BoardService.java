@@ -22,15 +22,14 @@ public class BoardService {
     private final BoardMapper mapper;
     private final MemberMapper memberMapper;
 
-    public void add(Board board, Authentication authentication, MultipartFile[] files) throws IOException {
+    public void add(Board board, MultipartFile[] files, Authentication authentication) throws IOException {
         board.setMemberId(Integer.valueOf(authentication.getName()));
-        // 게시물 저장 저장
+        // 게시물 저장
         mapper.insert(board);
 
-
-        // db에 해당 게시물의 파일 목록 저장
         if (files != null) {
             for (MultipartFile file : files) {
+                // db에 해당 게시물의 파일 목록 저장
                 mapper.insertFileName(board.getId(), file.getOriginalFilename());
                 // 실제 파일 저장
                 // 부모 디렉토리 만들기
@@ -66,7 +65,6 @@ public class BoardService {
         Map pageInfo = new HashMap();
         Integer countAll = mapper.countAllWithSearch(searchType, keyword);
 
-
         Integer offset = (page - 1) * 10;
         Integer lastPageNumber = (countAll - 1) / 10 + 1;
         Integer leftPageNumber = (page - 1) / 10 * 10 + 1;
@@ -96,18 +94,35 @@ public class BoardService {
     public Board get(Integer id) {
         Board board = mapper.selectById(id);
         List<String> fileNames = mapper.selectFileNameByBoardId(id);
+        // http://172.30.1.57:8888/{id}/{name}
         List<String> imageSrcList = fileNames.stream()
-                .map(name -> STR."http://172.30.1.39:8888/\{id}/\{name}")
+                .map(name -> STR."http://172.30.1.57:8888/\{id}/\{name}")
                 .toList();
 
         board.setImageSrcList(imageSrcList);
 
-        // http://172.30.1.39:8888/{id}/{name}
         return board;
     }
 
     public void remove(Integer id) {
+        // file 명 조회
+        List<String> fileNames = mapper.selectFileNameByBoardId(id);
 
+        // disk 에 있는 file
+        String dir = STR."C:/Temp/prj2/\{id}/";
+        for (String fileName : fileNames) {
+            File file = new File(dir + fileName);
+            file.delete();
+        }
+        File dirFile = new File(dir);
+        if (dirFile.exists()) {
+            dirFile.delete();
+        }
+
+        // board_file
+        mapper.deleteFileByBoardId(id);
+
+        // board
         mapper.deleteById(id);
     }
 

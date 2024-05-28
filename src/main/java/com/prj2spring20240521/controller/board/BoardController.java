@@ -27,18 +27,8 @@ public class BoardController {
             Board board,
             @RequestParam(value = "files[]", required = false) MultipartFile[] files) throws IOException {
 
-        if (files != null) {
-            System.out.println("files = " + files.length);
-
-
-            for (MultipartFile file : files) {
-                System.out.println("file.name = " + file.getOriginalFilename());
-            }
-
-        }
-
         if (service.validate(board)) {
-            service.add(board, authentication, files);
+            service.add(board, files, authentication);
             return ResponseEntity.ok().build();
         } else {
             return ResponseEntity.badRequest().build();
@@ -93,4 +83,3 @@ public class BoardController {
         }
     }
 }
-
