@@ -5,6 +5,7 @@ import lombok.Data;
 import java.time.LocalDateTime;
 import java.util.List;
 
+
 @Data
 public class Board {
     private Integer id;
@@ -15,5 +16,5 @@ public class Board {
     private LocalDateTime inserted;
 
     private Integer numberOfImages;
-    private List<String> imageSrcList;
+    private List<BoardFile> fileList;
 }
