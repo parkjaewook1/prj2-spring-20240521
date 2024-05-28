@@ -95,7 +95,7 @@ public class BoardService {
     public Board get(Integer id) {
         Board board = mapper.selectById(id);
         List<String> fileNames = mapper.selectFileNameByBoardId(id);
-        // http://172.30.1.57:8888/{id}/{name}
+        // http://172.30.1.39:8888/{id}/{name}
         List<BoardFile> files = fileNames.stream()
                 .map(name -> new BoardFile(name, STR."http://172.30.1.39:8888/\{id}/\{name}"))
                 .toList();
@@ -127,7 +127,38 @@ public class BoardService {
         mapper.deleteById(id);
     }
 
-    public void edit(Board board) {
+    public void edit(Board board, List<String> removeFileList, MultipartFile[] addFileList) throws IOException {
+        if (removeFileList != null && removeFileList.size() > 0) {
+            for (String fileName : removeFileList) {
+                // disk의 파일 삭제
+                String path = STR."C:/Temp/prj2/\{board.getId()}/\{fileName}";
+                File file = new File(path);
+                file.delete();
+                // db records 삭제
+                mapper.deleteFileByBoardIdAndName(board.getId(), fileName);
+            }
+        }
+
+        if (addFileList != null && addFileList.length > 0) {
+            List<String> fileNameList = mapper.selectFileNameByBoardId(board.getId());
+            for (MultipartFile file : addFileList) {
+                String fileName = file.getOriginalFilename();
+                if (!fileNameList.contains(fileName)) {
+                    // 새 파일이 기존에 없을 때만 db에 추가
+                    mapper.insertFileName(board.getId(), fileName);
+                }
+                // disk 에 쓰기
+                File dir = new File(STR."C:/Temp/prj2/\{board.getId()}");
+                if (!dir.exists()) {
+                    dir.mkdirs();
+                }
+                String path = STR."C:/Temp/prj2/\{board.getId()}/\{fileName}";
+                File destination = new File(path);
+                file.transferTo(destination);
+
+            }
+        }
+
         mapper.update(board);
     }
 
