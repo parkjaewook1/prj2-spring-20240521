@@ -123,6 +123,7 @@ public class BoardService {
         // s3에 있는 file
         for (String fileName : fileNames) {
             String key = STR."prj2/\{id}/\{fileName}";
+
             DeleteObjectRequest objectRequest = DeleteObjectRequest.builder()
                     .bucket(bucketName)
                     .key(key)
@@ -137,20 +138,22 @@ public class BoardService {
         mapper.deleteById(id);
     }
 
-    public void edit(Board board, List<String> removeFileList, MultipartFile[] addFileList) throws IOException {
-        if (removeFileList != null && removeFileList.size() > 0) {
-            for (String fileName : removeFileList) {
+    public void edit(Integer id, List<String> fileNames, MultipartFile[] addFileList) throws IOException {
+        if (fileNames != null && fileNames.size() > 0) {
+            for (String fileName : fileNames) {
                 // disk의 파일 삭제
-                String path = STR."C:/Temp/prj2/\{board.getId()}/\{fileName}";
-                File file = new File(path);
-                file.delete();
+                String key = STR."prj2/\{id}/\{fileName}";
+                DeleteObjectRequest objectRequest = DeleteObjectRequest.builder()
+                        .bucket(bucketName)
+                        .key(key)
+                        .build();
                 // db records 삭제
-                mapper.deleteFileByBoardIdAndName(board.getId(), fileName);
+                s3Client.deleteObject(objectRequest);
             }
         }
 
         if (addFileList != null && addFileList.length > 0) {
-            List<String> fileNameList = mapper.selectFileNameByBoardId(board.getId());
+            List<String> fileNameList = s3Client.serviceName(board.getId());
             for (MultipartFile file : addFileList) {
                 String fileName = file.getOriginalFilename();
                 if (!fileNameList.contains(fileName)) {
