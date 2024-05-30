@@ -9,19 +9,23 @@ import java.util.List;
 
 @Mapper
 public interface CommentMapper {
+
+
     @Insert("""
             INSERT INTO comment
-            (board_id,member_id,comment)
-            VALUES (#{boardId},#{memberId},#{comment})
+            (board_id, member_id, comment)
+            VALUES (#{boardId}, #{memberId}, #{comment})
             """)
     int insert(Comment comment);
 
-
     @Select("""
-            SELECT *
-            FROM comment
-            WHERE board_id=#{boardId}
-            ORDER BY id
+            SELECT c.id,
+                   c.comment,
+                   c.inserted,
+                   m.nick_name
+            FROM comment c JOIN member m ON c.member_id = m.id
+            WHERE board_id = #{boardId}
+            ORDER BY id 
             """)
-    List<Comment> selectAll(Integer boardId);
+    List<Comment> selectAllByBoardId(Integer boardId);
 }
