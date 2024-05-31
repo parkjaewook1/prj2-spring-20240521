@@ -38,4 +38,9 @@ public class CommentController {
     public void remove(@RequestBody Comment comment) {
         service.remove(comment);
     }
+
+    @PutMapping("edit")
+    public void edit(@RequestBody Comment comment) {
+        service.edit(comment);
+    }
 }

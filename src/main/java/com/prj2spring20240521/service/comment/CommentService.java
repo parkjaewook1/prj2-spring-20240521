@@ -57,5 +57,9 @@ public class CommentService {
         }
         return true;
     }
+
+    public void edit(Comment comment) {
+        mapper.updateByMemberId(comment.getId());
+    }
 }
 
