@@ -3,6 +3,7 @@ package com.prj2spring20240521.service.board;
 import com.prj2spring20240521.domain.board.Board;
 import com.prj2spring20240521.domain.board.BoardFile;
 import com.prj2spring20240521.mapper.board.BoardMapper;
+import com.prj2spring20240521.mapper.comment.CommentMapper;
 import com.prj2spring20240521.mapper.member.MemberMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,6 +29,7 @@ public class BoardService {
     private final BoardMapper mapper;
     private final MemberMapper memberMapper;
     final S3Client s3Client;
+    private final CommentMapper commentMapper;
 
     @Value("${aws.s3.bucket.name}")
     String bucketName;
@@ -44,7 +46,7 @@ public class BoardService {
             for (MultipartFile file : files) {
                 // db에 해당 게시물의 파일 목록 저장
                 mapper.insertFileName(board.getId(), file.getOriginalFilename());
-                // 실제 파일 저장(s3)
+                // 실제 파일 저장 (s3)
                 String key = STR."prj2/\{board.getId()}/\{file.getOriginalFilename()}";
                 PutObjectRequest objectRequest = PutObjectRequest.builder()
                         .bucket(bucketName)
@@ -52,7 +54,8 @@ public class BoardService {
                         .acl(ObjectCannedACL.PUBLIC_READ)
                         .build();
 
-                s3Client.putObject(objectRequest, RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
+                s3Client.putObject(objectRequest,
+                        RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
 
             }
         }
@@ -107,7 +110,7 @@ public class BoardService {
 
         Board board = mapper.selectById(id);
         List<String> fileNames = mapper.selectFileNameByBoardId(id);
-        // http://172.30.1.39:8888/{id}/{name}
+        // 버킷객체URL/{id}/{name}
         List<BoardFile> files = fileNames.stream()
                 .map(name -> new BoardFile(name, STR."\{srcPrefix}\{id}/\{name}"))
                 .toList();
@@ -132,18 +135,25 @@ public class BoardService {
         // file 명 조회
         List<String> fileNames = mapper.selectFileNameByBoardId(id);
 
-        // s3에 있는 file
+        // s3 에 있는 file
         for (String fileName : fileNames) {
             String key = STR."prj2/\{id}/\{fileName}";
             DeleteObjectRequest objectRequest = DeleteObjectRequest.builder()
                     .bucket(bucketName)
                     .key(key)
                     .build();
+
             s3Client.deleteObject(objectRequest);
         }
 
         // board_file
         mapper.deleteFileByBoardId(id);
+
+        // board_like
+        mapper.deleteLikeByBoardId(id);
+
+        // comment
+        commentMapper.deleteByBoardId(id);
 
         // board
         mapper.deleteById(id);
@@ -159,6 +169,7 @@ public class BoardService {
                         .key(key)
                         .build();
                 s3Client.deleteObject(objectRequest);
+
                 // db records 삭제
                 mapper.deleteFileByBoardIdAndName(board.getId(), fileName);
             }
@@ -185,6 +196,7 @@ public class BoardService {
             }
         }
 
+
         mapper.update(board);
     }
 
@@ -208,9 +220,10 @@ public class BoardService {
         if (count == 0) {
             mapper.insertLikeByBoardIdAndMemberId(boardId, memberId);
             result.put("like", true);
-
         }
+
         result.put("count", mapper.selectCountLikeByBoardId(boardId));
+
         return result;
     }
 }

@@ -23,6 +23,7 @@ public interface CommentMapper {
             SELECT c.id,
                    c.comment,
                    c.inserted,
+                   c.member_id,
                    m.nick_name
             FROM comment c JOIN member m ON c.member_id = m.id
             WHERE board_id = #{boardId}
@@ -32,8 +33,29 @@ public interface CommentMapper {
 
 
     @Delete("""
-            DELETE FROM comment
+            DELETE FROM comment 
             WHERE id = #{id}
             """)
     int deleteById(Integer id);
+
+    @Select("""
+            SELECT * 
+            FROM comment
+            WHERE id = #{id}
+            """)
+    Comment selectById(Integer id);
+
+
+    @Delete("""
+            DELETE FROM comment
+            WHERE board_id = #{boardId}
+            """)
+    int deleteByBoardId(Integer boardId);
+
+
+    @Delete("""
+            DELETE FROM comment
+            WHERE member_id = #{memberId}
+            """)
+    int deleteByMemberId(Integer id);
 }
