@@ -17,6 +17,7 @@ public class Comment {
 
     public String getInserted() {
         LocalDateTime beforeOneDay = LocalDateTime.now().minusDays(1);
+
         if (inserted.isBefore(beforeOneDay)) {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
             return inserted.format(formatter).toString();

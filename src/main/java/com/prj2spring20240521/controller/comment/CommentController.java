@@ -39,6 +39,7 @@ public class CommentController {
     }
 
     @DeleteMapping("remove")
+    @PreAuthorize("isAuthenticated()")
     public void remove(@RequestBody Comment comment,
                        Authentication authentication) {
         if (service.hasAccess(comment, authentication)) {
@@ -50,6 +51,7 @@ public class CommentController {
 
     }
 
+
     @PutMapping("edit")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity edit(@RequestBody Comment comment,
@@ -57,7 +59,6 @@ public class CommentController {
         if (service.hasAccess(comment, authentication)) {
             service.update(comment);
             return ResponseEntity.ok().build();
-
         } else {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
